@@ -8,9 +8,6 @@ import axios from "axios"
 import fetchBase from "../utils/fetchBase"
 
 // DESIGN IDEA: https://dribbble.com/shots/16842379-Social-Feed
-// const user = {
-//     img : 'https://i.pinimg.com/280x280_RS/94/1f/1a/941f1a1067a9f75149d0cb6d265fe509.jpg'
-// }
 
 export const Feed = (props) => {
     const { darkMode } = props;
@@ -81,8 +78,7 @@ export const Feed = (props) => {
             'Long time no see'
         ]
         const rnd = Math.floor(Math.random() * msgs.length)
-        const msg = `${msgs[rnd]}`
-        return msg
+        return `${msgs[rnd]}`
     }
 
     const fetchAllPosts = async () => {
@@ -93,8 +89,8 @@ export const Feed = (props) => {
             endpoint: '',
             method: 'GET',
         })
-        console.log(posts)
-        setPosts(posts.reverse())
+
+        setPosts([...posts].reverse())
         setLoading(false)
     }
 
@@ -110,10 +106,14 @@ export const Feed = (props) => {
         })
 
         if (res?.liked == undefined) return
-        
-        setPosts((prevPosts) => {
-            prevPosts.map((p) => p.post_id === post.post_id ? {...p, likeCount: p.likeCount + (res.liked ? 1 : -1)} : p)
-        })
+
+        setPosts((prevPosts) =>
+            prevPosts.map((p) =>
+                p.post_id === post.post_id
+                    ? { ...p, likeCount: p.likeCount + (res.liked ? 1 : -1) }
+                    : p
+            )
+        )
     }
 
     if (loading) {
@@ -129,6 +129,7 @@ export const Feed = (props) => {
             </div>
         )
     }
+
     return (
         <div className="flex bg-slate-900 min-h-screen h-auto text-white">
             <div className="w-full lg:w-2/5 border border-gray-600 mx-auto h-auto border-t-1">
@@ -146,10 +147,9 @@ export const Feed = (props) => {
                 </div>
                 <hr className="border-gray-600"></hr>
 
-                {posts.reverse().map((post, key) => {
-                    // if (post.authorName == undefined) return
-                    return <>
-                        <div className="flex" key={key}>
+                {posts.map((post, key) => (
+                    <div key={key}>
+                        <div className="flex">
                             <div className="m-2 w-10 py-1">
                                 <img className="inline-block h-10 w-10 rounded-full" src={post.img} alt="" />
                             </div>
@@ -157,11 +157,9 @@ export const Feed = (props) => {
                                 <h1 className="text-md text-gray-400 font-bold">@{post.username}</h1>
                                 <p className="text-xl">{post.text}</p>
                             </div>
-
                         </div>
                         <div className="flex p-3 border-b-2 border-b-gray-600">
                             <div className="flex-1">
-                                {/* {JSON.stringify(post)} */}
                                 <button>{post.likeCount} Likes</button>
                             </div>
                             <div className="flex-1">
@@ -174,8 +172,8 @@ export const Feed = (props) => {
                         <div className="flex row-auto">
                             {/* comments */}
                         </div>
-                    </>
-                })}
+                    </div>
+                ))}
             </div>
             <ToastContainer theme="dark" pauseOnHover={false} />
         </div>

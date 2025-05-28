@@ -156,7 +156,7 @@ export default function (props) {
                             <button onClick={validate} className="w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">Sign in</button>
                             {signInMode
                                 ? <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                                    Don't have an account yet? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(false)}>Sign up</a>
+                                    Don't have an account yet? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(false)}>Sign in</a>
                                 </p>
                                 : <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                                     Already have an account? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(true)}>Sign up</a>

@@ -5,11 +5,8 @@ import { useNavigate } from "react-router-dom"
 import { useUser } from "../hooks/useUser"
 import { fetchBase } from "../utils/fetchbase"
 
+
 export default function (props) {
-    const _ax = axios.create({
-        baseURL: 'http://localhost:8080'
-        // baseURL: 'http://25.40.36.163:8080'
-    })
 
     const { setUser } = useUser()
     const { darkMode } = props

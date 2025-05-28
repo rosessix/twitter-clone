@@ -4,36 +4,32 @@ import { useNavigate } from "react-router-dom"
 import { FeedInput } from "../components/FeedInput"
 import { ToastContainer, toast } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css';
-import axios from "axios"
 import fetchBase from "../utils/fetchBase"
-
-// DESIGN IDEA: https://dribbble.com/shots/16842379-Social-Feed
 
 export const Feed = (props) => {
     const { darkMode } = props;
     const navigate = useNavigate();
     const [tweet, setTweet] = useState('');
-    const [loading, setLoading] = useState(true)
-    const [posts, setPosts] = useState([{}])
-    const [welcomeMsg, setWelcomeMsg] = useState('')
+    const [loading, setLoading] = useState(true);
+    const [posts, setPosts] = useState([]);
+    const [welcomeMsg, setWelcomeMsg] = useState('');
 
-    const { user, setUser } = useUser();
+    const { user } = useUser();
 
     useEffect(() => {
         if (!user) {
-            navigate('/login')
+            navigate('/login');
         } else {
-            setLoading(false)
-            setWelcomeMsg(randomWelcome())
-            fetchAllPosts()
+            setLoading(false);
+            setWelcomeMsg(randomWelcome());
+            fetchAllPosts();
         }
-    }, [user, navigate])
+    }, [user]);
 
     const postTweet = async () => {
         const MAX_CHARS = 255;
-        const overLimit = tweet.length > MAX_CHARS
-        if (overLimit) {
-            return toast.error(`There can only be ${MAX_CHARS} characters inside of a post. Please lower your character use.`)
+        if (tweet.length > MAX_CHARS) {
+            return toast.error(`There can only be ${MAX_CHARS} characters inside of a post. Please lower your character use.`);
         }
 
         const res = await fetchBase({
@@ -44,30 +40,35 @@ export const Feed = (props) => {
                 authorId: user.id,
                 text: tweet
             }
-        })
+        });
 
-        if (res.error == true) {
-            toast.error(res.errorMsg)
-            return
+        if (res.error) {
+            toast.error(res.errorMsg);
+            return;
         }
 
-        toast.success(res.message)
-        let post = newPost(user, tweet, undefined, undefined)
-        setTweet('')
+        toast.success(res.message);
+        setTweet('');
+        // Option 1: Fetch updated list from backend
+        await fetchAllPosts();
+
+        // Option 2: Optimistic update (only if backend doesn't return full list)
+        // addNewPost(user, tweet);
     }
 
-    const newPost = (user, text, likes, comments) => {
-        let post = {
+    const addNewPost = (user, text, likes = 0, comments = []) => {
+        const post = {
             authorId: user.id,
             username: user.username,
-            text: text,
-            likes: likes,
-            comments: comments,
-            img: user.img
-        }
-        let postsArray = [post, ...posts]
-        setPosts(postsArray)
-        return post
+            text,
+            likes,
+            comments,
+            likeCount: 0,
+            img: user.img,
+            post_id: Math.random().toString(36).substring(7) // temporary ID
+        };
+
+        setPosts(prev => [post, ...prev]);
     }
 
     const randomWelcome = () => {
@@ -76,44 +77,41 @@ export const Feed = (props) => {
             'Welcome back',
             'Glad to have you back',
             'Long time no see'
-        ]
-        const rnd = Math.floor(Math.random() * msgs.length)
-        return `${msgs[rnd]}`
+        ];
+        return msgs[Math.floor(Math.random() * msgs.length)];
     }
 
     const fetchAllPosts = async () => {
-        setLoading(true)
+        setLoading(true);
 
         const posts = await fetchBase({
             controller: 'posts',
             endpoint: '',
             method: 'GET',
-        })
+        });
 
-        setPosts([...posts].reverse())
-        setLoading(false)
+        setPosts(posts); // Don't reverse here — expect backend to sort
+        setLoading(false);
     }
 
     const handleLike = async (post) => {
-        const postIndex = posts.findIndex((_post) => _post.post_id === post.post_id)
-
         const res = await fetchBase({
             method: 'POST',
             controller: 'posts',
             endpoint: `${post.post_id}/like`,
             authorize: true,
             body: {}
-        })
+        });
 
-        if (res?.liked == undefined) return
+        if (res?.liked === undefined) return;
 
-        setPosts((prevPosts) =>
-            prevPosts.map((p) =>
+        setPosts(prevPosts =>
+            prevPosts.map(p =>
                 p.post_id === post.post_id
                     ? { ...p, likeCount: p.likeCount + (res.liked ? 1 : -1) }
                     : p
             )
-        )
+        );
     }
 
     if (loading) {
@@ -141,11 +139,11 @@ export const Feed = (props) => {
                         <h1 className="text-xl float-right">Go to top!</h1>
                     </div>
                 </div>
-                <hr className="border-gray-600"></hr>
+                <hr className="border-gray-600" />
                 <div>
                     <FeedInput img={user.img} onSend={postTweet} onUpdate={setTweet} />
                 </div>
-                <hr className="border-gray-600"></hr>
+                <hr className="border-gray-600" />
 
                 {posts.map((post, key) => (
                     <div key={key}>
@@ -170,7 +168,7 @@ export const Feed = (props) => {
                             </div>
                         </div>
                         <div className="flex row-auto">
-                            {/* comments */}
+                            {/* comments section can go here */}
                         </div>
                     </div>
                 ))}

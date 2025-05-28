@@ -5,7 +5,7 @@ import { FeedInput } from "../components/FeedInput"
 import { ToastContainer, toast } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios"
-import { fetchBase } from "../utils/fetchbase"
+import fetchBase from "../utils/fetchBase"
 
 // DESIGN IDEA: https://dribbble.com/shots/16842379-Social-Feed
 // const user = {

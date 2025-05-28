@@ -4,7 +4,7 @@ const USE_LOCAL_API = true
 // const BASE_URL = 'http://localhost:8080'
 const BASE_URL = 'https://twitter-clone-5d2g.onrender.com'
 // const BASE_URL = 'http://25.40.36.163:8080'
-export const fetchBase = async (data) => {
+const fetchBase = async (data) => {
     const { controller, endpoint, body, method, authorize } = data
     const token = localStorage.getItem('token')
     const defaultHeaders = {
@@ -42,3 +42,5 @@ export const fetchBase = async (data) => {
     }
 
 }
+
+export default fetchBase

@@ -4,4 +4,7 @@ export interface User {
     email: string;
     avatar: string; // Image-URL
     password?: string; // hashed
+    bio: string;
+    location: string;
+    link: string;
 }

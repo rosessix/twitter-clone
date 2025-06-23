@@ -1,22 +1,40 @@
-import { useEffect, useState } from "react"
-import { useUser } from "../hooks/useUser"
-import { useNavigate } from "react-router-dom"
-import { FeedInput } from "../components/FeedInput"
-import { ToastContainer, toast } from "react-toastify"
+import { useCallback, useEffect, useState } from 'react';
+import { useUser } from '../hooks/useUser';
+import { useNavigate } from 'react-router-dom';
+import { FeedInput } from '../components/FeedInput';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import fetchBase from "../utils/fetchBase"
+import { fetchBase } from '../utils/fetchbase';
+import NavBar from '../components/NavBar';
+import FeedNavBar from '../components/FeedNavBar';
+import { formatDistanceToNow } from 'date-fns'
+import Modal from '../components/Modal/Modal';
 
-export const Feed = (props) => {
-    const { darkMode } = props;
+export const Feed = ({ darkMode }) => {
     const navigate = useNavigate();
     const [tweet, setTweet] = useState('');
     const [loading, setLoading] = useState(true);
     const [posts, setPosts] = useState([]);
     const [welcomeMsg, setWelcomeMsg] = useState('');
+    const [isProfileModalOpen, setProfileModalOpen] = useState(false);
+    const { user, setUser } = useUser();
 
-    const { user } = useUser();
+    const [userProfile, setUserProfile] = useState({
+        username: user.username || "mcadmin",
+        // displayName: "MC Admin",
+        bio: user.bio || "No known bio.",
+        location: user.location || 'No location set.',
+        link: user.link || "No website found." ,
+        // joinDate: "January 2024",
+        // following: 127,
+        // followers: 1543,
+        // posts: 89,
+    })
+
+    const [editForm, setEditForm] = useState(userProfile)
 
     useEffect(() => {
+        console.log(user)
         if (!user) {
             navigate('/login');
         } else {
@@ -24,12 +42,14 @@ export const Feed = (props) => {
             setWelcomeMsg(randomWelcome());
             fetchAllPosts();
         }
-    }, [user]);
+    }, [user, navigate]);
 
     const postTweet = async () => {
         const MAX_CHARS = 255;
         if (tweet.length > MAX_CHARS) {
-            return toast.error(`There can only be ${MAX_CHARS} characters inside of a post. Please lower your character use.`);
+            return toast.error(
+                `There can only be ${MAX_CHARS} characters inside of a post. Please lower your character use.`
+            );
         }
 
         const res = await fetchBase({
@@ -38,8 +58,8 @@ export const Feed = (props) => {
             authorize: true,
             body: {
                 authorId: user.id,
-                text: tweet
-            }
+                text: tweet,
+            },
         });
 
         if (res.error) {
@@ -48,51 +68,37 @@ export const Feed = (props) => {
         }
 
         toast.success(res.message);
-        setTweet('');
-        // Option 1: Fetch updated list from backend
-        await fetchAllPosts();
 
-        // Option 2: Optimistic update (only if backend doesn't return full list)
-        // addNewPost(user, tweet);
-    }
-
-    const addNewPost = (user, text, likes = 0, comments = []) => {
         const post = {
             authorId: user.id,
             username: user.username,
-            text,
-            likes,
-            comments,
-            likeCount: 0,
+            text: tweet,
+            likes: 0,
+            comments: [],
             img: user.img,
-            post_id: Math.random().toString(36).substring(7) // temporary ID
+            created_at: Date.now(),
+            likeCount: 0,
         };
 
-        setPosts(prev => [post, ...prev]);
-    }
-
-    const randomWelcome = () => {
-        const msgs = [
-            'Good to see you',
-            'Welcome back',
-            'Glad to have you back',
-            'Long time no see'
-        ];
-        return msgs[Math.floor(Math.random() * msgs.length)];
-    }
+        setPosts((prev) => [post, ...prev]);
+        setTweet('');
+    };
 
     const fetchAllPosts = async () => {
         setLoading(true);
 
-        const posts = await fetchBase({
+        const res = await fetchBase({
             controller: 'posts',
             endpoint: '',
             method: 'GET',
         });
 
-        setPosts(posts); // Don't reverse here — expect backend to sort
+        if (Array.isArray(res)) {
+            setPosts(res);
+        }
+
         setLoading(false);
-    }
+    };
 
     const handleLike = async (post) => {
         const res = await fetchBase({
@@ -100,80 +106,195 @@ export const Feed = (props) => {
             controller: 'posts',
             endpoint: `${post.post_id}/like`,
             authorize: true,
-            body: {}
+            body: {},
         });
 
         if (res?.liked === undefined) return;
 
-        setPosts(prevPosts =>
-            prevPosts.map(p =>
+        setPosts((prevPosts) =>
+            prevPosts.map((p) =>
                 p.post_id === post.post_id
                     ? { ...p, likeCount: p.likeCount + (res.liked ? 1 : -1) }
                     : p
             )
         );
+    };
+
+    const randomWelcome = () => {
+        const msgs = [
+            'Good to see you',
+            'Welcome back',
+            'Glad to have you back',
+            'Long time no see',
+        ];
+        const rnd = Math.floor(Math.random() * msgs.length);
+        return msgs[rnd];
+    };
+
+    const handleSaveProfile = async (form) => {
+        const res = await fetchBase({
+            method: 'POST',
+            controller: 'users',
+            endpoint: `update`,
+            authorize: true,
+            body: {
+                bio: editForm.bio,
+                location: editForm.location,
+                link: editForm.link,
+            },
+        });
+
+        if (res.updated) {
+            setUser(prevUser => ({
+                ...prevUser,
+                bio: editForm.bio,
+                location: editForm.location,
+                link: editForm.link,
+            }));
+
+            setProfileModalOpen(false);
+            toast.success("Profile updated!");
+        }
+        // setEditForm(editForm)
+
     }
 
-    if (loading) {
-        return (
-            <div className="flex justify-center align-center items-center h-screen w-screen bg-slate-900">
-                <div role="status" className="scale-150">
-                    <svg aria-hidden="true" className="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                    </svg>
-                    <span className="sr-only">Loading...</span>
-                </div>
-            </div>
-        )
+    const handleCloseProfileModal = useCallback(() => {
+        setProfileModalOpen(false)
+    }, [])
+
+    if (!user) {
+        return <h1>No user found...</h1>
     }
 
     return (
-        <div className="flex bg-slate-900 min-h-screen h-auto text-white">
-            <div className="w-full lg:w-2/5 border border-gray-600 mx-auto h-auto border-t-1">
-                <div className="flex p-3">
-                    <div className="flex-1">
-                        <h1 className="text-xl">{welcomeMsg} <span className="font-bold">{user.username}</span>!</h1>
+        <div className='min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 text-white'>
+            <FeedNavBar className='bg-white/10' />
+            <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+                <div className='grid grid-cols-1 lg:grid-cols-4 gap-12'>
+                    <div className='lg:col-span-1'>
+                        <div className='bg-white/10 backdrop-blur-sm border border-white/20 text-white sticky top-8 p-6 rounded-md text-center'>
+                            <div className='w-24 h-24 flex items-center justify-self-center border-4 border-white/20 rounded-full mb-2'>
+                                <img src={user.img} className='rounded-full w-24' />
+                            </div>
+                            <h1 className='font-bold text-xl text-center mb-1'>@{user.username}</h1>
+                            <p className='text-sm text-center text-white/80 mb-1'>{user.bio ? user.bio : 'No known bio.'}</p>
+                            {(user.location && user.location.length > 0) && (
+                                <div className='flex flex-row items-center justify-center text-sm text-white/70 mb-1 gap-2'>
+                                    <i className='fas fa-map-pin'></i>
+                                    <p>{user.location}</p>
+                                </div>
+                            )}
+                            {(user.link && user.link.length > 0) && (
+                                <div className='flex flex-row items-center justify-center text-sm text-white/70 mb-1 gap-2'>
+                                    <i className='fas fa-link'></i>
+                                    <p>{user.link}</p>
+                                </div>
+                            )}
+                            <div className='backdrop-blur-sm border border-white/40 text-white flex items-center justify-center rounded-md gap-2 p-2 mt-2 cursor-pointer bg-white/20 hover:bg-white/30 transition-all' onClick={() => setProfileModalOpen(true)}>
+                                <i className='fas fa-pen-to-square' />
+                                <p className="font-bold text-sm">Edit Profile</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex-1">
-                        <h1 className="text-xl float-right">Go to top!</h1>
+                    <div className='lg:col-span-3'>
+                        <div className='gap-2 text-center mb-2'>
+                            <h1 className='font-bold text-2xl text-center'>{welcomeMsg} <span className='text-yellow-200'>{user.username}</span></h1>
+                            <p className='text-white/80 text-sm'>Share your thoughts and connect with minds that matter.</p>
+                        </div>
+                        {/* tweet section */}
+                        {/* post section */}
+                        <FeedInput img={user.img} onSend={postTweet} onUpdate={setTweet} value={tweet} />
+                        <div className='space-y-4'>
+                            {posts.map((post) => {
+                                const date = new Date(post.created_at)
+                                const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: false })
+                                return (
+                                    <div className='bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all rounded-lg p-6'>
+                                        <div className='flex flex-col space-x-4'>
+                                            <div className='flex flex-row space-x-4'>
+                                                <div className='flex flex-col items-center justify-center'>
+                                                    <img src={post.img} className='w-12 h-12 border-2 border-white/30 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold' />
+                                                </div>
+                                                <div>
+                                                    <div className='flex gap-2 items-center'>
+                                                        <p className='font-bold text-md'>@{post.username}</p> <span className='text-white/60 text-xs'>·  {timeAgo}</span>
+                                                    </div>
+                                                    <p>{post.text}</p>
+                                                    <div className='flex items-center flex-row gap-4'>
+                                                        <div className='items-center text-white/80 cursor-pointer hover:bg-white/20 rounded-md' onClick={() => handleLike(post)}>
+                                                            <div className='flex flex-row gap-2 items-center'>
+                                                                <i className='fa-regular fa-heart' />
+                                                                <h1>{post.likeCount} Likes</h1>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
-                <hr className="border-gray-600" />
-                <div>
-                    <FeedInput img={user.img} onSend={postTweet} onUpdate={setTweet} />
-                </div>
-                <hr className="border-gray-600" />
 
-                {posts.map((post, key) => (
-                    <div key={key}>
-                        <div className="flex">
-                            <div className="m-2 w-10 py-1">
-                                <img className="inline-block h-10 w-10 rounded-full" src={post.img} alt="" />
-                            </div>
-                            <div className="flex-1 px-2 pt-2 mt-2">
-                                <h1 className="text-md text-gray-400 font-bold">@{post.username}</h1>
-                                <p className="text-xl">{post.text}</p>
-                            </div>
-                        </div>
-                        <div className="flex p-3 border-b-2 border-b-gray-600">
-                            <div className="flex-1">
-                                <button>{post.likeCount} Likes</button>
-                            </div>
-                            <div className="flex-1">
-                                <button onClick={() => handleLike(post)}>Like</button>
-                            </div>
-                            <div className="flex-3">
-                                <button>Comment</button>
-                            </div>
-                        </div>
-                        <div className="flex row-auto">
-                            {/* comments section can go here */}
-                        </div>
-                    </div>
-                ))}
             </div>
-            <ToastContainer theme="dark" pauseOnHover={false} />
+            <ToastContainer theme='dark' pauseOnHover={false} />
+            <Modal isOpen={isProfileModalOpen} onClose={handleCloseProfileModal} title={"Edit profile"}>
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+                            Bio
+                        </label>
+                        <textarea
+                            id="bio"
+                            value={editForm.bio}
+                            onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                            Location
+                        </label>
+                        <input
+                            id="location"
+                            type="text"
+                            value={editForm.location}
+                            onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+                            Website
+                        </label>
+                        <input
+                            id="website"
+                            type="text"
+                            value={editForm.link}
+                            onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div className="flex space-x-3 pt-4">
+                        <button
+                            onClick={handleSaveProfile}
+                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                        >
+                            Save Changes
+                        </button>
+                        <button
+                            onClick={() => setProfileModalOpen(false)}
+                            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
-    )
-}
+    );
+};

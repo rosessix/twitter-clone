@@ -7,6 +7,7 @@ import { Feed } from './pages/Feed';
 import { useState } from 'react';
 import useDarkMode from './hooks/useDarkMode';
 import { UserProvider } from './hooks/useUser';
+import LogoutPage from './pages/LogoutPage';
 function App() {
 	const { darkMode, toggleDarkMode } = useDarkMode();
 	const [user, setUser] = useState(null);
@@ -15,9 +16,10 @@ function App() {
 		<UserProvider>
 			<BrowserRouter>
 				<Routes>
-					<Route index element={<IndexPage darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}></Route>
-					<Route path='/login' element={<LoginPage darkMode={darkMode} setUser={setUser} />}></Route>
-					<Route path='/feed' element={<Feed darkMode={darkMode} />}></Route>
+					<Route index element={<IndexPage toggleDarkMode={toggleDarkMode} />}></Route>
+					<Route path='/login' element={<LoginPage setUser={setUser} />}></Route>
+					<Route path='/feed' element={<Feed />}></Route>
+					<Route path='/logout' element={<LogoutPage />}></Route>
 					<Route path='*' element={<NoPageFound />} />
 				</Routes>
 			</BrowserRouter>

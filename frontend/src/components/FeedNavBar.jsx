@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {RiMoonClearFill, RiSunFill} from 'react-icons/ri'
 export default function (props) {
-    let {darkMode, toggleDarkMode, className} = props
+    let {darkMode, toggleDarkMode} = props
     const location = useLocation()
     const currentTab = location.pathname
     const navItems = [
         { label: 'Home', path: '/' },
         { label: 'About', path: '/about' },
-        { label: 'Login', path: '/login' },
+        { label: 'Logout', path: '/logout' },
     ]
 
 
@@ -28,8 +28,8 @@ export default function (props) {
 
     return (
         <nav>
-            <div className={`container w-full mx-auto px-6 py-2 flex justify-between items-center bg-white/95 backdrop-blur-sm`}>
-                <a className="font-bold text-2xl lg:text-4xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" href="#">
+            <div className={`mx-auto w-screen px-6 py-2 flex justify-between items-center bg-white/10 rounded-md backdrop-blur-sm border-b border-white/20`}>
+                <a className="font-bold text-2xl lg:text-4xl text-white" href="#">
                     daydream
                 </a>
                 <div className="lg:block">

@@ -3,10 +3,13 @@ import emailValidator from 'email-validator'
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useUser } from "../hooks/useUser"
-import fetchBase from "../utils/fetchBase"
-
+import { fetchBase } from "../utils/fetchbase"
 
 export default function (props) {
+    const _ax = axios.create({
+        baseURL: 'http://localhost:8080'
+        // baseURL: 'http://25.40.36.163:8080'
+    })
 
     const { setUser } = useUser()
     const { darkMode } = props
@@ -40,9 +43,9 @@ export default function (props) {
             })
 
             setLoading(false)
-            const { token, errorMsg } = res
-            if (errorMsg !== '' && errorMsg !== undefined) {
-                setError(errorMsg)
+            const { token, msg } = res
+            if (msg !== '' && msg !== undefined) {
+                setError(msg)
                 return
             }
             console.log(token)
@@ -72,17 +75,21 @@ export default function (props) {
             })
             setLoading(false)
             console.log(res)
+            console.log(res.msg)
             if (res.error === true) {
-                setError(res.errorMsg)
+                return setError(res.msg)
             }
+            
+            setMsg(res.msg)
 
-            if (res.error === false) {
-                setMsg(res.data.msg)
-
-                localStorage.setItem('uid', res.user.id)
-                setUser(res.user)
+            const { token, msg } = res
+            const userData = JSON.parse(atob(token.split('.')[1]))
+            localStorage.setItem('token', token)
+            setUser(userData)
+            setLoading(false)
+            setTimeout(() => {
                 navigate('/feed')
-            }
+            }, 150)
         }
     }
 
@@ -102,7 +109,7 @@ export default function (props) {
     return (
         <section className={`w-screen h-screen dark bg-gradient-to-br from-purple-600 to-blue-600`}>
             <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                <a onClick={() => navigate('/')} className="flex items-center mb-6 text-2xl font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                <a href="#" className="flex items-center mb-6 text-2xl font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                     daydream
                 </a>
                 <div className="w-full bg-gray-800 rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
@@ -153,13 +160,13 @@ export default function (props) {
                             }
                             {error !== '' && <p className="text-red-400 text-center">{error}</p>}
                             {msg !== '' && <p className="text-green-400 text-center">{msg}</p>}
-                            <button onClick={validate} className="w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">Sign in</button>
+                            <button onClick={validate} className="w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">{signInMode ? 'Sign in' : 'Sign up'}</button>
                             {signInMode
                                 ? <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                                    Don't have an account yet? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(false)}>Sign in</a>
+                                    Don't have an account yet? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(false)}>Sign up</a>
                                 </p>
                                 : <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                                    Already have an account? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(true)}>Sign up</a>
+                                    Already have an account? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(true)}>Sign in</a>
                                 </p>
                             }
                         </div>

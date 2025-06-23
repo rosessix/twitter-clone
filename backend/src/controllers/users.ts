@@ -8,7 +8,10 @@ import { User } from "../models/user";
 const SALT_ROUNDS = 12
 const DEFAULT_IMAGE = 'https://picsum.photos/200' // this is a random image
 
-export const createUser = async (email: string, username: string, password: string, req: Request) => {
+type CreateUserResult =
+  | { error: true; msg: string }
+  | { error: false; msg: string; user: Promise<{ error: boolean; msg?: string; user?: any }> };
+export const createUser = async (email: string, username: string, password: string, req: Request): Promise<CreateUserResult> => {
     let con = await db.getConnection();
 
     let data: any = await con.execute('SELECT * FROM users WHERE email = ? OR username = ?', [email, username])
@@ -26,14 +29,16 @@ export const createUser = async (email: string, username: string, password: stri
         return { error: false, msg: "Your account has been created.", user: user }
     } else { // already a user with either username or email
         if (data[0][0].email === email) {
-            return { error: true, errorMsg: "This email is already in use." }
+            return { error: true, msg: "This email is already in use." }
         }
 
         con.release()
         if (data[0][0].username === username) {
-            return { error: true, errorMsg: "There is already a user with this username." }
+            return { error: true, msg: "There is already a user with this username." }
         }
     }
+
+    return {error: true, msg: 'Unknown error occured.'}
 }
 
 export const loginUser = async (email: string, password: string, req: Request) => {
@@ -48,18 +53,18 @@ export const loginUser = async (email: string, password: string, req: Request) =
     // let user: User = data[0][0]
     let user = data[0][0]
     if (user == undefined) {
-        return { error: true, errorMsg: NO_USER_MSG }
+        return { error: true, msg: NO_USER_MSG }
     }
 
     
     if (!user || !user.password) {
-        return { error: true, errorMsg: NO_USER_MSG };
+        return { error: true, msg: NO_USER_MSG };
     }
 
     const MATCH = await bcrypt.compare(password, user.password)
 
     if (!MATCH) {
-        return { error: true, errorMsg: NO_USER_MSG };
+        return { error: true, msg: NO_USER_MSG };
     }
 
     user.password = undefined; // remove it for security reasons
@@ -78,6 +83,8 @@ export const getUserFromId = async (id: String) => {
     let data: any = await con.execute('SELECT * FROM users WHERE id = ?', [id])
     con.release()
     let user = data[0][0]
+
+    user.password = undefined
     if (!user) return console.log(`Could not find user ${id} in the database.`)
 
     return user
@@ -91,5 +98,16 @@ export const fetchAllUsers = async () => {
     return users
 }
 
+export const updateUserProfile = async (id: string, bio: string, location: string, link: string) => {
+    let con = await db.getConnection();
 
+    let query = 'UPDATE users SET bio = ?, location = ?, link = ? WHERE id = ?'
+    let values = [bio, location, link, id]
+    let edited = await con.execute(query, values)
+    con.release()
+
+    let userData = await getUserFromId(id)
+    console.log(userData)
+    return userData
+}
 

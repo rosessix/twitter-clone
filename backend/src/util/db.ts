@@ -1,10 +1,10 @@
 import mysql from 'mysql2/promise'
 
-const host = process.env.MYSQL_ADDON_HOST
-const user = process.env.MYSQL_ADDON_USER
-const database = process.env.MYSQL_ADDON_DB
-const password = process.env.MYSQL_ADDON_PASSWORD
-console.log(host, user, database, password)
+const host = 'localhost'
+const user = 'root'
+const database = 'daydream'
+const password = ''
+
 const db = mysql.createPool({
     host: host,
     user: user,

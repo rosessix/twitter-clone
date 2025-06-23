@@ -58,12 +58,13 @@ export const fetchAllPosts = async () => {
             users.username, 
             users.email,
             users.img,
+            posts.created_at,
             COUNT(post_likes.post_id) AS likeCount
         FROM posts
         INNER JOIN users ON posts.authorId = users.id
         LEFT JOIN post_likes ON posts.id = post_likes.post_id
         GROUP BY posts.id, users.id
-        ORDER BY posts.createdAt ASC
+        ORDER BY posts.created_at DESC
     `);
     let posts = data[0]
     con.release()

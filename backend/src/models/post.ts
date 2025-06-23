@@ -4,4 +4,5 @@ export interface Post {
     text: string,
     likes: number,
     comments: Array<any>,
+    created_at: Date
 }

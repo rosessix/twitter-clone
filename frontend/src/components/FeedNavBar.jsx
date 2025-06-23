@@ -29,9 +29,9 @@ export default function (props) {
     return (
         <nav>
             <div className={`mx-auto w-screen px-6 py-2 flex justify-between items-center bg-white/10 rounded-md backdrop-blur-sm border-b border-white/20`}>
-                <a className="font-bold text-2xl lg:text-4xl text-white" href="#">
+                <Link to="/" className="font-bold text-2xl lg:text-4xl text-white" href="#">
                     daydream
-                </a>
+                </Link>
                 <div className="lg:block">
                     <ul className="inline-flex  items-center">
                         {navItems.map((item, index) => (

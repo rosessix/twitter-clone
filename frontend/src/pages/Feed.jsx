@@ -168,7 +168,7 @@ export const Feed = ({ darkMode }) => {
     }
 
     return (
-        <div className='min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 text-white'>
+        <div className='min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-purple-400 text-white'>
             <FeedNavBar className='bg-white/10' />
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
                 <div className='grid grid-cols-1 lg:grid-cols-4 gap-12'>
@@ -275,7 +275,7 @@ export const Feed = ({ darkMode }) => {
                             id="website"
                             type="text"
                             value={editForm.link}
-                            onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                            onChange={(e) => setEditForm({ ...editForm, link: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                     </div>

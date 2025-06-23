@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FeedInput } from '../components/FeedInput';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { fetchBase } from '../utils/fetchbase';
+import { fetchBase } from '../utils/fetchBase';
 import NavBar from '../components/NavBar';
 import FeedNavBar from '../components/FeedNavBar';
 import { formatDistanceToNow } from 'date-fns'

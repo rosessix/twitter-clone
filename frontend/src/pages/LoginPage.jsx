@@ -3,7 +3,7 @@ import emailValidator from 'email-validator'
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useUser } from "../hooks/useUser"
-import { fetchBase } from "../utils/fetchbase"
+import { fetchBase } from "../utils/fetchBase"
 
 export default function (props) {
     const _ax = axios.create({

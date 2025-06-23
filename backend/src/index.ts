@@ -1,3 +1,5 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express, { Express } from 'express'
 import userRouter from './routes/users'
 import postRouter from './routes/posts'

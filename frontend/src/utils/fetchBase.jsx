@@ -1,7 +1,7 @@
 import { toast } from "react-toastify"
 
 const USE_LOCAL_API = true
-const BASE_URL = 'http://localhost:8080'
+const BASE_URL = import.meta.env.VITE_API_BASEURL
 // const BASE_URL = 'http://25.40.36.163:8080'
 export const fetchBase = async (data) => {
     const { controller, endpoint, body, method, authorize } = data

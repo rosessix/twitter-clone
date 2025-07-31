@@ -45,9 +45,9 @@ router.post('/login', async (req: Request, res: Response) => {
 })
 
 router.post('/update', authenticateToken, async (req: Request, res: Response) => {
-    let {bio, location, link} = req.body
+    let {bio, location, link, img} = req.body
 
-    let user = await updateUserProfile(req.user.id, bio, location, link)
+    let user = await updateUserProfile(req.user.id, bio, location, link, img)
     res.status(200).send({updated: true, userData: user})
 
 })

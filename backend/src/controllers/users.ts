@@ -6,11 +6,11 @@ import bcrypt from 'bcrypt';
 import { User } from "../models/user";
 
 const SALT_ROUNDS = 12
-const DEFAULT_IMAGE = 'https://picsum.photos/200' // this is a random image
+const DEFAULT_IMAGE = 'https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small_2x/default-avatar-icon-of-social-media-user-vector.jpg' // this is a random image
 
 type CreateUserResult =
-  | { error: true; msg: string }
-  | { error: false; msg: string; user: Promise<{ error: boolean; msg?: string; user?: any }> };
+    | { error: true; msg: string }
+    | { error: false; msg: string; user: Promise<{ error: boolean; msg?: string; user?: any }> };
 export const createUser = async (email: string, username: string, password: string, req: Request): Promise<CreateUserResult> => {
     let con = await db.getConnection();
 
@@ -38,7 +38,7 @@ export const createUser = async (email: string, username: string, password: stri
         }
     }
 
-    return {error: true, msg: 'Unknown error occured.'}
+    return { error: true, msg: 'Unknown error occured.' }
 }
 
 export const loginUser = async (email: string, password: string, req: Request) => {
@@ -56,7 +56,7 @@ export const loginUser = async (email: string, password: string, req: Request) =
         return { error: true, msg: NO_USER_MSG }
     }
 
-    
+
     if (!user || !user.password) {
         return { error: true, msg: NO_USER_MSG };
     }
@@ -98,11 +98,11 @@ export const fetchAllUsers = async () => {
     return users
 }
 
-export const updateUserProfile = async (id: string, bio: string, location: string, link: string) => {
+export const updateUserProfile = async (id: string, bio: string, location: string, link: string, img: string, ) => {
     let con = await db.getConnection();
 
-    let query = 'UPDATE users SET bio = ?, location = ?, link = ? WHERE id = ?'
-    let values = [bio, location, link, id]
+    let query = 'UPDATE users SET bio = ?, location = ?, link = ?, img = ? WHERE id = ?'
+    let values = [bio, location, link, img, id]
     let edited = await con.execute(query, values)
     con.release()
 

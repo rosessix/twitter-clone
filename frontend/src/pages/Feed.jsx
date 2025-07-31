@@ -9,6 +9,7 @@ import NavBar from '../components/NavBar';
 import FeedNavBar from '../components/FeedNavBar';
 import { formatDistanceToNow } from 'date-fns'
 import Modal from '../components/Modal/Modal';
+import UserInfo from '../components/UserInfo';
 
 export const Feed = ({ darkMode }) => {
     const navigate = useNavigate();
@@ -20,16 +21,19 @@ export const Feed = ({ darkMode }) => {
     const { user, setUser } = useUser();
 
     const [userProfile, setUserProfile] = useState({
-        username: user.username || "mcadmin",
+        username: user?.username || "mcadmin",
         // displayName: "MC Admin",
-        bio: user.bio || "No known bio.",
-        location: user.location || 'No location set.',
-        link: user.link || "No website found." ,
+        bio: user?.bio || "No known bio.",
+        location: user?.location || 'No location set.',
+        link: user?.link || "No website found." ,
+        img: user?.img ,
         // joinDate: "January 2024",
         // following: 127,
         // followers: 1543,
         // posts: 89,
     })
+
+    console.log(userProfile)
 
     const [editForm, setEditForm] = useState(userProfile)
 
@@ -141,6 +145,7 @@ export const Feed = ({ darkMode }) => {
                 bio: editForm.bio,
                 location: editForm.location,
                 link: editForm.link,
+                img: editForm.img,
             },
         });
 
@@ -150,18 +155,29 @@ export const Feed = ({ darkMode }) => {
                 bio: editForm.bio,
                 location: editForm.location,
                 link: editForm.link,
+                img: editForm.img
             }));
 
             setProfileModalOpen(false);
             toast.success("Profile updated!");
         }
         // setEditForm(editForm)
-
     }
 
     const handleCloseProfileModal = useCallback(() => {
         setProfileModalOpen(false)
     }, [])
+
+    const isSafeImageUrl = (url) => {
+        try {
+            const parsed = new URL(url);
+            const isHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
+            const hasImageExtension = /\.(png|jpe?g|gif|webp|svg)$/i.test(parsed.pathname);
+            return isHttp && hasImageExtension;
+        } catch {
+            return false;
+        }
+    }
 
     if (!user) {
         return <h1>No user found...</h1>
@@ -172,39 +188,16 @@ export const Feed = ({ darkMode }) => {
             <FeedNavBar className='bg-white/10' />
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
                 <div className='grid grid-cols-1 lg:grid-cols-4 gap-12'>
-                    <div className='lg:col-span-1'>
-                        <div className='bg-white/10 backdrop-blur-sm border border-white/20 text-white sticky top-8 p-6 rounded-md text-center'>
-                            <div className='w-24 h-24 flex items-center justify-self-center border-4 border-white/20 rounded-full mb-2'>
-                                <img src={user.img} className='rounded-full w-24' />
-                            </div>
-                            <h1 className='font-bold text-xl text-center mb-1'>@{user.username}</h1>
-                            <p className='text-sm text-center text-white/80 mb-1'>{user.bio ? user.bio : 'No known bio.'}</p>
-                            {(user.location && user.location.length > 0) && (
-                                <div className='flex flex-row items-center justify-center text-sm text-white/70 mb-1 gap-2'>
-                                    <i className='fas fa-map-pin'></i>
-                                    <p>{user.location}</p>
-                                </div>
-                            )}
-                            {(user.link && user.link.length > 0) && (
-                                <div className='flex flex-row items-center justify-center text-sm text-white/70 mb-1 gap-2'>
-                                    <i className='fas fa-link'></i>
-                                    <p>{user.link}</p>
-                                </div>
-                            )}
-                            <div className='backdrop-blur-sm border border-white/40 text-white flex items-center justify-center rounded-md gap-2 p-2 mt-2 cursor-pointer bg-white/20 hover:bg-white/30 transition-all' onClick={() => setProfileModalOpen(true)}>
-                                <i className='fas fa-pen-to-square' />
-                                <p className="font-bold text-sm">Edit Profile</p>
-                            </div>
-                        </div>
-                    </div>
+                    <UserInfo openModal={setProfileModalOpen}/>
                     <div className='lg:col-span-3'>
                         <div className='gap-2 text-center mb-2'>
                             <h1 className='font-bold text-2xl text-center'>{welcomeMsg} <span className='text-yellow-200'>{user.username}</span></h1>
                             <p className='text-white/80 text-sm'>Share your thoughts and connect with minds that matter.</p>
                         </div>
                         {/* tweet section */}
-                        {/* post section */}
                         <FeedInput img={user.img} onSend={postTweet} onUpdate={setTweet} value={tweet} />
+                        
+                        {/* post section */}
                         <div className='space-y-4'>
                             {posts.map((post) => {
                                 const date = new Date(post.created_at)
@@ -214,7 +207,9 @@ export const Feed = ({ darkMode }) => {
                                         <div className='flex flex-col space-x-4'>
                                             <div className='flex flex-row space-x-4'>
                                                 <div className='flex flex-col items-center justify-center'>
-                                                    <img src={post.img} className='w-12 h-12 border-2 border-white/30 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold' />
+                                                    {isSafeImageUrl(post.img) && (
+                                                        <img src={post.img} className='min-w-12 min-h-12 max-w-12 max-h-12 object-cover border-2 border-white/30 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold' />
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <div className='flex gap-2 items-center'>
@@ -276,6 +271,18 @@ export const Feed = ({ darkMode }) => {
                             type="text"
                             value={editForm.link}
                             onChange={(e) => setEditForm({ ...editForm, link: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="avatar" className="block text-sm font-medium text-gray-700 mb-1">
+                            Image
+                        </label>
+                        <input
+                            id="avatar"
+                            type="text"
+                            value={editForm.img}
+                            onChange={(e) => setEditForm({ ...editForm, img: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                     </div>

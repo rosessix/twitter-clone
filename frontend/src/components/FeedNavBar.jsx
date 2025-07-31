@@ -11,14 +11,12 @@ export default function (props) {
         { label: 'Logout', path: '/logout' },
     ]
 
-
     const NavItem = ({ label, path }) => {
-        const classes = "px-2 lg:px-4 hover:bg-gradient-to-r hover:from-purple-600 hover:to-blue-600 hover:bg-clip-text hover:text-transparent"
         let isActive = currentTab === path;
         return (
             <li>
                 <Link to={path}>
-                    <a className={isActive ? classes + "font-bold" : classes}>
+                    <a className={`px-2 lg:px-4 hover:bg-gradient-to-r hover:from-purple-600 hover:to-blue-600 hover:bg-clip-text hover:text-transparent ${isActive ? 'font-bold' : ''}`}>
                         {label}
                     </a>
                 </Link>

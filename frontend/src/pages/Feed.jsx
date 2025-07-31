@@ -208,7 +208,12 @@ export const Feed = ({ darkMode }) => {
                                             <div className='flex flex-row space-x-4'>
                                                 <div className='flex flex-col items-center justify-center'>
                                                     {isSafeImageUrl(post.img) && (
-                                                        <img src={post.img} className='min-w-12 min-h-12 max-w-12 max-h-12 object-cover border-2 border-white/30 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold' />
+                                                        <img src={post.img}
+                                                            onError={(e) => {
+                                                                e.target.onerror = null
+                                                                e.target.src = 'https://picsum.photos/200'
+                                                            }}
+                                                            className='min-w-12 min-h-12 max-w-12 max-h-12 object-cover border-2 border-white/30 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold' />
                                                     )}
                                                 </div>
                                                 <div>

@@ -112,7 +112,13 @@ export default function (props) {
                 <a href="#" className="flex items-center mb-6 text-2xl font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                     daydream
                 </a>
-                <div className="w-full bg-gray-800 rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+                <form 
+                    className="w-full bg-gray-800 rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700"
+                    onSubmit={(e) => {
+                        e.preventDefault(); // Prevent default form submission
+                        validate();         // Call your existing login/signup logic
+                    }}
+                >
                     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                         <h1 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                             {signInMode ? 'Sign in to your account' : 'Sign up for daydream'}
@@ -160,7 +166,7 @@ export default function (props) {
                             }
                             {error !== '' && <p className="text-red-400 text-center">{error}</p>}
                             {msg !== '' && <p className="text-green-400 text-center">{msg}</p>}
-                            <button onClick={validate} className="w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">{signInMode ? 'Sign in' : 'Sign up'}</button>
+                            <button type="submit" onClick={validate} className="w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">{signInMode ? 'Sign in' : 'Sign up'}</button>
                             {signInMode
                                 ? <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                                     Don't have an account yet? <a href="#" className="font-medium text-gray-600 hover:underline dark:text-gray-500" onClick={() => setSignInMode(false)}>Sign up</a>
@@ -171,7 +177,7 @@ export default function (props) {
                             }
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </section>
     )
